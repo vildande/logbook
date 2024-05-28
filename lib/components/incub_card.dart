@@ -1,42 +1,72 @@
 import 'package:flutter/material.dart';
 
 class IncubCard extends StatelessWidget {
-  const IncubCard({super.key});
+  final String name;
+  final String startTime;
+  final String endTime;
+  final String incubatorType;
+  final bool isActive;
+
+  const IncubCard({
+    super.key,
+    required this.name,
+    required this.startTime,
+    required this.endTime,
+    required this.incubatorType,
+    this.isActive = false,
+  });
 
   @override
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
         border: Border.all(width: 0.5),
-        borderRadius: BorderRadius.circular(10)
+        borderRadius: BorderRadius.circular(10),
       ),
-      padding: EdgeInsets.symmetric(vertical: 10, horizontal: 15),
+      padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 15),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text("John Doe"),
+              Text(name),
               Row(
                 children: [
-                  Icon(Icons.timer, size: 12),
-                  Container(padding: EdgeInsets.only(left: 3)), // emptyspace
-                  Text("13:05", style: TextStyle(fontSize: 10)),
-                  Text(" - ", style: TextStyle(fontSize: 10),),
-                  Text("19:30", style: TextStyle(fontSize: 10),)
-                ]
+                  const Icon(Icons.timer, size: 12),
+                  const SizedBox(width: 3), // empty space
+                  Text(startTime, style: const TextStyle(fontSize: 10)),
+                  const Text(
+                    " - ",
+                    style: TextStyle(fontSize: 10),
+                  ),
+                  if (!isActive)
+                    Text(endTime, style: const TextStyle(fontSize: 10)),
+                  if (isActive)
+                    Container(
+                      margin: const EdgeInsets.only(left: 5),
+                      padding: const EdgeInsets.symmetric(
+                          vertical: 5, horizontal: 10),
+                      decoration: BoxDecoration(
+                        color: Colors.green,
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: const Text(
+                        "Active",
+                        style: TextStyle(color: Colors.white, fontSize: 10),
+                      ),
+                    ),
+                ],
               ),
-            ] 
+            ],
           ),
-          Container(
-            padding: EdgeInsets.only(top: 10),
-            child: Text("Top Incubator", style: TextStyle(fontSize: 10),),
-          )
-          
-
+          const SizedBox(height: 10),
+          Text(
+            incubatorType,
+            style: const TextStyle(fontSize: 10),
+          ),
         ],
-      )
+      ),
     );
   }
 }
