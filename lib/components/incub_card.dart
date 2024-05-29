@@ -3,27 +3,15 @@ import 'package:flutter/material.dart';
 class IncubCard extends StatelessWidget {
   final String name;
   final String startTime;
-<<<<<<< HEAD
-  final String endTime;
-  final String incubatorType;
-  final bool isActive;
-=======
   final String? endTime;
   final String incubatorType;
->>>>>>> mainpage_layout
 
   const IncubCard({
     super.key,
     required this.name,
     required this.startTime,
-<<<<<<< HEAD
-    required this.endTime,
-    required this.incubatorType,
-    this.isActive = false,
-=======
     this.endTime,
     required this.incubatorType,
->>>>>>> mainpage_layout
   });
 
   @override
@@ -50,15 +38,9 @@ class IncubCard extends StatelessWidget {
                     " - ",
                     style: TextStyle(fontSize: 10),
                   ),
-<<<<<<< HEAD
-                  if (!isActive)
-                    Text(endTime, style: const TextStyle(fontSize: 10)),
-                  if (isActive)
-=======
                   if (endTime != null)
                     Text(endTime!, style: const TextStyle(fontSize: 10)),
                   if (endTime == null)
->>>>>>> mainpage_layout
                     Container(
                       margin: const EdgeInsets.only(left: 5),
                       padding: const EdgeInsets.symmetric(
@@ -80,6 +62,7 @@ class IncubCard extends StatelessWidget {
           Text(
             incubatorType,
             style: const TextStyle(fontSize: 10),
+            
           ),
         ],
       ),
