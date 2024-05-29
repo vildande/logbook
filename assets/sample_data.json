@@ -1,0 +1,78 @@
+{
+    "Users": [
+      {
+        "UserID": 10000003,
+        "Name": "Boris Filan",
+        "PhoneNumber": "+77766654576",
+        "Usages": [
+          {
+            "UsageID": 1,
+            "UsageDetails": "6x 15ml Falcon tubes/E. coli culture/37C/140rpm",
+            "IncubatorType": "Top",
+            "StartTime": "2024-05-05 13:05",
+            "EndTime": null,
+            "Comment": "Press if Cancelled",
+            "Status": "Pending"
+          }
+        ]
+      },
+      {
+        "UserID": 20000001,
+        "Name": "Alua Muratkyzy",
+        "PhoneNumber": "+77718853645",
+        "Usages": [
+          {
+            "UsageID": 2,
+            "UsageDetails": "2x500ml Erlenmeyer flasks/Yeast culture/30C/156rpm",
+            "IncubatorType": "Bottom",
+            "StartTime": "2024-05-05 13:05",
+            "EndTime": null,
+            "Comment": "Press if Cancelled",
+            "Status": "Pending"
+          }
+        ]
+      },
+      {
+        "UserID": 10000002,
+        "Name": "Banu Alieva",
+        "PhoneNumber": "+77775564523",
+        "Usages": [
+          {
+            "UsageID": 3,
+            "UsageDetails": "12x1.5ml eppendorf tubes/E. coli culture/37C/140rpm",
+            "IncubatorType": "Top",
+            "StartTime": "2024-05-04 15:26",
+            "EndTime": "2024-05-03 15:26",
+            "Comment": "-",
+            "Status": "Completed"
+          },
+          {
+            "UsageID": 4,
+            "UsageDetails": "1x500ml Erlenmeyer flask/E. coli culture/37C/140rpm",
+            "IncubatorType": "Bottom",
+            "StartTime": "2024-05-04 15:26",
+            "EndTime": "2024-05-03 15:26",
+            "Comment": "-",
+            "Status": "Completed"
+          }
+        ]
+      },
+      {
+        "UserID": 10000001,
+        "Name": "Murat Samiliev",
+        "PhoneNumber": "+77706689845",
+        "Usages": [
+          {
+            "UsageID": 5,
+            "UsageDetails": "6x1.5ml eppendorf tubes/E. coli culture/37C/140rpm",
+            "IncubatorType": "Top",
+            "StartTime": "2024-05-03 15:26",
+            "EndTime": "2024-05-03 15:26",
+            "Comment": "-",
+            "Status": "Completed"
+          }
+        ]
+      }
+    ]
+  }
+  
