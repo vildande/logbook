@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart' show rootBundle;
 import 'package:logbook/pages/add_incub_page.dart';
 import '../components/incub_card.dart';
-import 'package:logbook/models/user_model.dart';
+import '../utility/data_loader.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -17,16 +16,7 @@ class _HomePageState extends State<HomePage> {
   @override
   void initState() {
     super.initState();
-    _usagesWithUser = loadUsagesWithUser();
-  }
-
-  Future<List<UsageWithUser>> loadUsagesWithUser() async {
-    final jsonString = await rootBundle.loadString('assets/sample_data.json');
-    List<User> users = parseUsers(jsonString);
-    return users
-        .expand(
-            (user) => user.usages.map((usage) => UsageWithUser(user, usage)))
-        .toList();
+    _usagesWithUser = DataLoader().loadUsagesWithUser();
   }
 
   @override
@@ -50,11 +40,7 @@ class _HomePageState extends State<HomePage> {
                       color: Colors.white,
                       size: 30,
                     ),
-                    Icon(
-                      Icons.menu,
-                      color: Colors.white,
-                      size: 30,
-                    ),
+                    Icon(Icons.menu, color: Colors.white, size: 30),
                   ],
                 ),
               ),
@@ -71,18 +57,16 @@ class _HomePageState extends State<HomePage> {
                         Text(
                           'Welcome to ',
                           style: TextStyle(
-                            color: Colors.white,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 20,
-                          ),
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 20),
                         ),
                         Text(
                           'Logbook',
                           style: TextStyle(
-                            color: Colors.white,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 20,
-                          ),
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 20),
                         ),
                       ],
                     ),
@@ -163,11 +147,4 @@ class _HomePageState extends State<HomePage> {
       ),
     );
   }
-}
-
-class UsageWithUser {
-  final User user;
-  final Usage usage;
-
-  UsageWithUser(this.user, this.usage);
 }

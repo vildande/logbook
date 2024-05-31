@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:logbook/pages/add_incub_page.dart';
 import 'package:logbook/pages/home_page.dart';
+import 'package:logbook/pages/log_table.dart';
 
 void main() {
   runApp(const MainApp());
@@ -13,11 +14,11 @@ class MainApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
         debugShowCheckedModeBanner: false,
-        initialRoute: '/',
-        routes:  {
+        initialRoute: '/log-table',
+        routes: {
           '/': (context) => HomePage(),
-          '/add-incubation': (context) => AddIncubPage()
-        }
-      );
+          '/add-incubation': (context) => AddIncubPage(),
+          '/log-table': (context) => DataTablePage()
+        });
   }
 }
