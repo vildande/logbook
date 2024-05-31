@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show rootBundle;
+import 'package:logbook/pages/add_incub_page.dart';
 import '../components/incub_card.dart';
 import 'package:logbook/models/user_model.dart';
 
@@ -145,7 +146,12 @@ class _HomePageState extends State<HomePage> {
                   backgroundColor: const Color.fromARGB(255, 31, 38, 51),
                   padding: const EdgeInsets.symmetric(horizontal: 60),
                 ),
-                onPressed: () {},
+                onPressed: () {
+                  Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => const AddIncubPage()));
+                },
                 child: const Text(
                   'Log',
                   style: TextStyle(color: Colors.white),
