@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:logbook/pages/add_incub_page.dart';
 import 'package:logbook/pages/home_page.dart';
 
 void main() {
@@ -10,7 +11,13 @@ class MainApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const MaterialApp(
-        debugShowCheckedModeBanner: false, home: HomePage());
+    return MaterialApp(
+        debugShowCheckedModeBanner: false,
+        initialRoute: '/',
+        routes:  {
+          '/': (context) => HomePage(),
+          '/add-incubation': (context) => AddIncubPage()
+        }
+      );
   }
 }
