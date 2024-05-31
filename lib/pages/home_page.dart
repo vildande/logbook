@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:logbook/components/incub_card.dart';
+import 'package:logbook/pages/add_incub_page.dart';
 
 class HomePage extends StatelessWidget {
   const HomePage({super.key});
@@ -113,7 +114,12 @@ class HomePage extends StatelessWidget {
                       backgroundColor: const Color.fromARGB(255, 31, 38, 51),
                       padding: const EdgeInsets.symmetric(horizontal: 60),
                     ),
-                    onPressed: () {},
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => AddIncubPage()),
+                      );
+                    },
                     child: const Text(
                       'Log',
                       style: TextStyle(color: Colors.white),
