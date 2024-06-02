@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:logbook/pages/add_incub_page.dart';
+import 'package:logbook/pages/log_table.dart';
 import '../components/incub_card.dart';
 import '../utility/data_loader.dart';
 
@@ -32,15 +33,23 @@ class _HomePageState extends State<HomePage> {
               Container(
                 padding:
                     const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
-                child: const Row(
+                child:  Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Icon(
+                    const Icon(
                       Icons.cabin,
                       color: Colors.white,
                       size: 30,
                     ),
-                    Icon(Icons.menu, color: Colors.white, size: 30),
+                    IconButton(
+                      icon: const Icon(Icons.menu, color: Colors.white, size: 30), 
+                      onPressed: () {
+                        Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) => const DataTablePage()));
+                      }
+                    ),
                   ],
                 ),
               ),
@@ -137,7 +146,7 @@ class _HomePageState extends State<HomePage> {
                           builder: (context) => const AddIncubPage()));
                 },
                 child: const Text(
-                  'Log',
+                  'Make a record',
                   style: TextStyle(color: Colors.white),
                 ),
               ),

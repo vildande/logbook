@@ -53,6 +53,7 @@ class Usage {
       status: json['Status'],
     );
   }
+
 }
 
 List<User> parseUsers(String jsonStr) {

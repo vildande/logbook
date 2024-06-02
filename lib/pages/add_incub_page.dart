@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:logbook/models/user_model.dart';
 
 class AddIncubPage extends StatefulWidget {
   const AddIncubPage({super.key});
@@ -36,6 +37,23 @@ class _AddIncubPageState extends State<AddIncubPage> {
   void _startIncubation() {
     print(
         "\n----------Add Incubation Record----------\nContact: ${_contactController.text}\nTop Incubator used: $_topIncubUsed\nBottom Incubator used: $_bottomIncubUsed\nUsage: ${_usageController.text}\n-----------------------------------------\n");
+    
+    if (_topIncubUsed || _bottomIncubUsed) {
+      String contactDetails = _contactController.text;
+      String usageDetails = _usageController.text;
+      DateTime timeNow = DateTime.now();
+
+      List<String> incubationRecords = [];
+
+      if (_topIncubUsed)
+        incubationRecords.add("{'contacts': '${contactDetails}', 'usage': '${usageDetails}', 'type': 'Top', 'start': ${timeNow.toIso8601String()}}");
+      if (_bottomIncubUsed)
+        incubationRecords.add("{'contacts': '${contactDetails}', 'usage': '${usageDetails}', 'type': 'Bottom', 'start': ${timeNow.toIso8601String()}}");
+
+      for(var s in incubationRecords) {
+        print(s);
+      }
+    }
   }
 
   @override

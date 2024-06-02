@@ -14,7 +14,7 @@ class MainApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
         debugShowCheckedModeBanner: false,
-        initialRoute: '/log-table',
+        initialRoute: '/',
         routes: {
           '/': (context) => HomePage(),
           '/add-incubation': (context) => AddIncubPage(),
