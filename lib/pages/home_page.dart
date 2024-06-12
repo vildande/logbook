@@ -146,7 +146,7 @@ class _HomePageState extends State<HomePage> {
                           builder: (context) => const AddIncubPage()));
                 },
                 child: const Text(
-                  'Make a record',
+                  'Start Incubation',
                   style: TextStyle(color: Colors.white),
                 ),
               ),
