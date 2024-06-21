@@ -12,7 +12,7 @@
           "StartTime": "2024-05-05 13:05",
           "EndTime": null,
           "Comment": "Press if Cancelled",
-          "Status": "Pending"
+          "Status": "In Progress"
         }
       ]
     },
@@ -28,7 +28,7 @@
           "StartTime": "2024-05-05 13:05",
           "EndTime": null,
           "Comment": "Press if Cancelled",
-          "Status": "Pending"
+          "Status": "In Progress"
         }
       ]
     },
@@ -101,7 +101,7 @@
           "StartTime": "2024-05-07 11:30",
           "EndTime": null,
           "Comment": "Needs high accuracy",
-          "Status": "Pending"
+          "Status": "In Progress"
         }
       ]
     },
@@ -133,7 +133,7 @@
           "StartTime": "2024-05-09 14:00",
           "EndTime": null,
           "Comment": "Monitor temperature",
-          "Status": "Pending"
+          "Status": "In Progress"
         }
       ]
     },
