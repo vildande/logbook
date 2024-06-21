@@ -5,10 +5,23 @@ class DataLoader {
   Future<List<UsageWithUser>> loadUsagesWithUser() async {
     final jsonString = await rootBundle.loadString('assets/sample_data.json');
     List<User> users = parseUsers(jsonString);
-    return users
-        .expand(
-            (user) => user.usages.map((usage) => UsageWithUser(user, usage)))
-        .toList();
+    List<UsageWithUser> usageWithUsers = users.expand(
+      (user) => user.usages.map((usage) => UsageWithUser(user, usage))
+    ).toList();
+    
+    usageWithUsers.sort((a,b) => a.usage.status.toLowerCase() == 'completed' ? 1 : -1);
+    usageWithUsers.sort((a, b) {
+      DateTime startTimeA = DateTime.parse(a.usage.startTime);
+      DateTime startTimeB = DateTime.parse(b.usage.startTime);
+      return startTimeB.compareTo(startTimeA);
+    });
+
+    // Pending
+    // In Progress 
+    // Cancelled
+    // Completed
+
+    return usageWithUsers;
   }
 }
 

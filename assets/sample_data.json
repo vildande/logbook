@@ -66,8 +66,8 @@
           "UsageID": 5,
           "UsageDetails": "6x1.5ml eppendorf tubes/E. coli culture/37C/140rpm",
           "IncubatorType": "Top",
-          "StartTime": "2024-05-03 15:26",
-          "EndTime": "2024-05-03 15:26",
+          "StartTime": "2024-05-03 15:25",
+          "EndTime": "2024-05-03 15:30",
           "Comment": "-",
           "Status": "Completed"
         }
@@ -147,9 +147,9 @@
           "UsageDetails": "10x1.5ml eppendorf tubes/Yeast culture/30C/150rpm",
           "IncubatorType": "Top",
           "StartTime": "2024-05-10 16:00",
-          "EndTime": null,
+          "EndTime": "2024-05-10 16:05",
           "Comment": "Stir every 2 hours",
-          "Status": "Pending"
+          "Status": "Cancelled"
         },
         {
           "UsageID": 11,
@@ -158,7 +158,7 @@
           "StartTime": "2024-05-09 14:00",
           "EndTime": null,
           "Comment": "Monitor temperature",
-          "Status": "Pending"
+          "Status": "In Progress"
         }
       ]
     }

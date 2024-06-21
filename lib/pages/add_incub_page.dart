@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:logbook/models/user_model.dart';
 
 class AddIncubPage extends StatefulWidget {
   const AddIncubPage({super.key});
@@ -12,12 +11,14 @@ class _AddIncubPageState extends State<AddIncubPage> {
   bool _topIncubUsed = false;
   bool _bottomIncubUsed = false;
 
-  final _contactController = TextEditingController();
+  final _contactNameController = TextEditingController();
+  final _contactPhoneController = TextEditingController();
   final _usageController = TextEditingController();
 
   @override
   void dispose() {
-    _contactController.dispose();
+    _contactNameController.dispose();
+    _contactPhoneController.dispose();
     _usageController.dispose();
     super.dispose();
   }
@@ -35,20 +36,21 @@ class _AddIncubPageState extends State<AddIncubPage> {
   }
 
   void _startIncubation() {
-    print(
-        "\n----------Add Incubation Record----------\nContact: ${_contactController.text}\nTop Incubator used: $_topIncubUsed\nBottom Incubator used: $_bottomIncubUsed\nUsage: ${_usageController.text}\n-----------------------------------------\n");
-    
+
     if (_topIncubUsed || _bottomIncubUsed) {
-      String contactDetails = _contactController.text;
+      String contactName = _contactNameController.text;
+      String contactPhone = _contactPhoneController.text;
       String usageDetails = _usageController.text;
       DateTime timeNow = DateTime.now();
 
       List<String> incubationRecords = [];
 
-      if (_topIncubUsed)
-        incubationRecords.add("{'contacts': '${contactDetails}', 'usage': '${usageDetails}', 'type': 'Top', 'start': ${timeNow.toIso8601String()}}");
-      if (_bottomIncubUsed)
-        incubationRecords.add("{'contacts': '${contactDetails}', 'usage': '${usageDetails}', 'type': 'Bottom', 'start': ${timeNow.toIso8601String()}}");
+      if (_topIncubUsed) {
+        incubationRecords.add("{'name': '${contactName}', 'phone': '${contactPhone}', 'usage': '${usageDetails}', 'type': 'Top', 'start': ${timeNow.toIso8601String()}}");
+      }
+      if (_bottomIncubUsed) {
+        incubationRecords.add("{'name': '${contactName}', 'phone': '${contactPhone}', 'usage': '${usageDetails}', 'type': 'Bottom', 'start': ${timeNow.toIso8601String()}}");
+      }
 
       for(var s in incubationRecords) {
         print(s);
@@ -69,7 +71,8 @@ class _AddIncubPageState extends State<AddIncubPage> {
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 30),
         child: Column(
           children: [
-            _buildContactInfoSection(),
+            _buildContactNameSection(),
+            _buildContactPhoneSection(),
             _buildIncubatorSelectionSection(),
             _buildUsageDescriptionSection(),
             _buildStartIncubationButton(),
@@ -79,19 +82,35 @@ class _AddIncubPageState extends State<AddIncubPage> {
     );
   }
 
-  Widget _buildContactInfoSection() {
+  Widget _buildContactNameSection() {
     return Padding(
       padding: const EdgeInsets.only(bottom: 20),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text("Contact info",
+          const Text("Name",
               style: TextStyle(color: Colors.white, fontSize: 24)),
-          const Text("(First name and Last name / phone number)",
-              style: TextStyle(color: Colors.white70, fontSize: 14)),
+          // const Text("(First name and Last name / phone number)",
+          //     style: TextStyle(color: Colors.white70, fontSize: 14)),
           const SizedBox(height: 10),
           _buildTextInputField(
-              controller: _contactController, hintText: "Contact Info"),
+              controller: _contactNameController, hintText: "John Doe"),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildContactPhoneSection() {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 20),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text("Phone number",
+              style: TextStyle(color: Colors.white, fontSize: 24)),
+          const SizedBox(height: 10),
+          _buildTextInputField(
+              controller: _contactPhoneController, hintText: "+7 777 777 77 77"),
         ],
       ),
     );
