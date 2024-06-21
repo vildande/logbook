@@ -26,7 +26,11 @@ class DataTableWidget extends StatelessWidget {
         dataRowHeight: 60.0,
         columns: const [
           DataColumn(
+              label: Text('Status', style: TextStyle(color: Colors.white))),
+          DataColumn(
               label: Text('Name', style: TextStyle(color: Colors.white))),
+          DataColumn(
+              label: Text('Phone number', style: TextStyle(color: Colors.white))),
           DataColumn(
               label: Text('Incubator Type',
                   style: TextStyle(color: Colors.white))),
@@ -37,14 +41,19 @@ class DataTableWidget extends StatelessWidget {
           DataColumn(
               label:
                   Text('Usage Details', style: TextStyle(color: Colors.white))),
-          DataColumn(
-              label: Text('Comment', style: TextStyle(color: Colors.white))),
-          DataColumn(
-              label: Text('Status', style: TextStyle(color: Colors.white))),
+
+          // DataColumn(
+          //     label: Text('Comment', style: TextStyle(color: Colors.white))),
+
+          
         ],
         rows: pageLogs.map((log) {
           return DataRow(cells: [
+            DataCell(Text(log.usage.status,
+                style: const TextStyle(color: Colors.white))),
             DataCell(Text(log.user.name,
+                style: const TextStyle(color: Colors.white))),
+            DataCell(Text(log.user.phoneNumber,
                 style: const TextStyle(color: Colors.white))),
             DataCell(Text(log.usage.incubatorType,
                 style: const TextStyle(color: Colors.white))),
@@ -54,10 +63,9 @@ class DataTableWidget extends StatelessWidget {
                 style: const TextStyle(color: Colors.white))),
             DataCell(Text(log.usage.usageDetails,
                 style: const TextStyle(color: Colors.white))),
-            DataCell(Text(log.usage.comment,
-                style: const TextStyle(color: Colors.white))),
-            DataCell(Text(log.usage.status,
-                style: const TextStyle(color: Colors.white))),
+            // DataCell(Text(log.usage.comment,
+            //     style: const TextStyle(color: Colors.white))),
+            
           ]);
         }).toList(),
       ),
