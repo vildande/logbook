@@ -34,93 +34,96 @@ class DataTableWidget extends StatelessWidget {
 
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
-      child: DataTable(
-        columnSpacing: 16.0,
-        dataRowHeight: 60.0,
-        columns: const [
-          DataColumn(
-              label: Text('Status', style: TextStyle(color: Colors.white))),
-          DataColumn(
-              label: Text('Name', style: TextStyle(color: Colors.white))),
-          DataColumn(
-              label: Text('Phone number', style: TextStyle(color: Colors.white))),
-          DataColumn(
-              label: Text('Incubator Type',
-                  style: TextStyle(color: Colors.white))),
-          DataColumn(
-              label: Text('Start Time', style: TextStyle(color: Colors.white))),
-          DataColumn(
-              label: Text('End Time', style: TextStyle(color: Colors.white))),
-          DataColumn(
-              label:
-                  Text('Usage Details', style: TextStyle(color: Colors.white))),
-          DataColumn(
-              label:
-                  Text('Actions', style: TextStyle(color: Colors.white))),
-        ],
-        rows: pageLogs.map((log) {
-          return DataRow(
-            selected: initialRecord != null && log == initialRecord,
-            cells: [
-              DataCell(Text(log.usage.status,
-                  style: const TextStyle(color: Colors.white))),
-              DataCell(Text(log.user.name,
-                  style: const TextStyle(color: Colors.white))),
-              DataCell(Text(log.user.phoneNumber,
-                  style: const TextStyle(color: Colors.white))),
-              DataCell(Text(log.usage.incubatorType,
-                  style: const TextStyle(color: Colors.white))),
-              DataCell(Text(log.usage.startTime,
-                  style: const TextStyle(color: Colors.white))),
-              DataCell(Text(log.usage.endTime ?? 'Active',
-                  style: const TextStyle(color: Colors.white))),
-              DataCell(Text(log.usage.usageDetails,
-                  style: const TextStyle(color: Colors.white))),
-              DataCell(
-                Row(
-                  children: [
-                    Container(
-                      margin: const EdgeInsets.symmetric(horizontal: 4.0),
-                      child: TextButton(
-                        style: TextButton.styleFrom(
-                          foregroundColor: Colors.white, backgroundColor: Colors.blue,
+      child: SingleChildScrollView(
+        scrollDirection: Axis.vertical,
+        child: DataTable(
+          columnSpacing: 16.0,
+          dataRowHeight: 60.0,
+          columns: const [
+            DataColumn(
+                label: Text('Status', style: TextStyle(color: Colors.white))),
+            DataColumn(
+                label: Text('Name', style: TextStyle(color: Colors.white))),
+            DataColumn(
+                label: Text('Phone number', style: TextStyle(color: Colors.white))),
+            DataColumn(
+                label: Text('Incubator Type',
+                    style: TextStyle(color: Colors.white))),
+            DataColumn(
+                label: Text('Start Time', style: TextStyle(color: Colors.white))),
+            DataColumn(
+                label: Text('End Time', style: TextStyle(color: Colors.white))),
+            DataColumn(
+                label:
+                    Text('Usage Details', style: TextStyle(color: Colors.white))),
+            DataColumn(
+                label:
+                    Text('Actions', style: TextStyle(color: Colors.white))),
+          ],
+          rows: pageLogs.map((log) {
+            return DataRow(
+              selected: initialRecord != null && log == initialRecord,
+              cells: [
+                DataCell(Text(log.usage.status,
+                    style: const TextStyle(color: Colors.white))),
+                DataCell(Text(log.user.name,
+                    style: const TextStyle(color: Colors.white))),
+                DataCell(Text(log.user.phoneNumber,
+                    style: const TextStyle(color: Colors.white))),
+                DataCell(Text(log.usage.incubatorType,
+                    style: const TextStyle(color: Colors.white))),
+                DataCell(Text(log.usage.startTime,
+                    style: const TextStyle(color: Colors.white))),
+                DataCell(Text(log.usage.endTime ?? 'Active',
+                    style: const TextStyle(color: Colors.white))),
+                DataCell(Text(log.usage.usageDetails,
+                    style: const TextStyle(color: Colors.white))),
+                DataCell(
+                  Row(
+                    children: [
+                      Container(
+                        margin: const EdgeInsets.symmetric(horizontal: 4.0),
+                        child: TextButton(
+                          style: TextButton.styleFrom(
+                            foregroundColor: Colors.white, backgroundColor: Colors.blue,
+                          ),
+                          onPressed: () {
+                            _showEditDialog(context, log);
+                          },
+                          child: const Text('Edit'),
                         ),
-                        onPressed: () {
-                          _showEditDialog(context, log);
-                        },
-                        child: const Text('Edit'),
                       ),
-                    ),
-                    Container(
-                      margin: const EdgeInsets.symmetric(horizontal: 4.0),
-                      child: TextButton(
-                        style: TextButton.styleFrom(
-                          foregroundColor: Colors.white, backgroundColor: Colors.red,
+                      Container(
+                        margin: const EdgeInsets.symmetric(horizontal: 4.0),
+                        child: TextButton(
+                          style: TextButton.styleFrom(
+                            foregroundColor: Colors.white, backgroundColor: Colors.red,
+                          ),
+                          onPressed: () {
+                            _showEndDialog(context, log);
+                          },
+                          child: const Text('End'),
                         ),
-                        onPressed: () {
-                          _showEndDialog(context, log);
-                        },
-                        child: const Text('End'),
                       ),
-                    ),
-                    Container(
-                      margin: const EdgeInsets.symmetric(horizontal: 4.0),
-                      child: TextButton(
-                        style: TextButton.styleFrom(
-                          foregroundColor: Colors.white, backgroundColor: Colors.orange,
+                      Container(
+                        margin: const EdgeInsets.symmetric(horizontal: 4.0),
+                        child: TextButton(
+                          style: TextButton.styleFrom(
+                            foregroundColor: Colors.white, backgroundColor: Colors.orange,
+                          ),
+                          onPressed: () {
+                            _showCancelDialog(context, log);
+                          },
+                          child: const Text('Cancel'),
                         ),
-                        onPressed: () {
-                          _showCancelDialog(context, log);
-                        },
-                        child: const Text('Cancel'),
                       ),
-                    ),
-                  ],
-                )
-              ),
-            ],
-          );
-        }).toList(),
+                    ],
+                  )
+                ),
+              ],
+            );
+          }).toList(),
+        ),
       ),
     );
   }
@@ -439,8 +442,8 @@ class DataTableWidget extends StatelessWidget {
                     value: selectedValue,
                     items: ['Top', 'Bottom']
                         .map((label) => DropdownMenuItem(
-                              child: Text(label),
                               value: label,
+                              child: Text(label),
                             ))
                         .toList(),
                     onChanged: onChanged,
