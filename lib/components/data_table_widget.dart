@@ -5,11 +5,13 @@ class DataTableWidget extends StatelessWidget {
   final List<UsageWithUser> usagesWithUser;
   final int logsPerPage;
   final int pageIndex;
+  final UsageWithUser? initialRecord;
 
   const DataTableWidget({
     required this.usagesWithUser,
     required this.logsPerPage,
     required this.pageIndex,
+    this.initialRecord,
     super.key,
   });
 
@@ -18,6 +20,15 @@ class DataTableWidget extends StatelessWidget {
     int startIndex = pageIndex * logsPerPage;
     int endIndex = (startIndex + logsPerPage).clamp(0, usagesWithUser.length);
     var pageLogs = usagesWithUser.sublist(startIndex, endIndex);
+
+    WidgetsBinding.instance?.addPostFrameCallback((_) {
+      if (initialRecord != null) {
+        int recordIndex = usagesWithUser.indexOf(initialRecord!);
+        if (recordIndex != -1 && recordIndex >= startIndex && recordIndex < endIndex) {
+          Scrollable.ensureVisible(context, duration: Duration(milliseconds: 300));
+        }
+      }
+    });
 
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
@@ -46,64 +57,67 @@ class DataTableWidget extends StatelessWidget {
                   Text('Actions', style: TextStyle(color: Colors.white))),
         ],
         rows: pageLogs.map((log) {
-          return DataRow(cells: [
-            DataCell(Text(log.usage.status,
-                style: const TextStyle(color: Colors.white))),
-            DataCell(Text(log.user.name,
-                style: const TextStyle(color: Colors.white))),
-            DataCell(Text(log.user.phoneNumber,
-                style: const TextStyle(color: Colors.white))),
-            DataCell(Text(log.usage.incubatorType,
-                style: const TextStyle(color: Colors.white))),
-            DataCell(Text(log.usage.startTime,
-                style: const TextStyle(color: Colors.white))),
-            DataCell(Text(log.usage.endTime ?? 'Active',
-                style: const TextStyle(color: Colors.white))),
-            DataCell(Text(log.usage.usageDetails,
-                style: const TextStyle(color: Colors.white))),
-            DataCell(
-              Row(
-                children: [
-                  Container(
-                    margin: const EdgeInsets.symmetric(horizontal: 4.0),
-                    child: TextButton(
-                      style: TextButton.styleFrom(
-                        foregroundColor: Colors.white, backgroundColor: Colors.blue,
+          return DataRow(
+            selected: initialRecord != null && log == initialRecord,
+            cells: [
+              DataCell(Text(log.usage.status,
+                  style: const TextStyle(color: Colors.white))),
+              DataCell(Text(log.user.name,
+                  style: const TextStyle(color: Colors.white))),
+              DataCell(Text(log.user.phoneNumber,
+                  style: const TextStyle(color: Colors.white))),
+              DataCell(Text(log.usage.incubatorType,
+                  style: const TextStyle(color: Colors.white))),
+              DataCell(Text(log.usage.startTime,
+                  style: const TextStyle(color: Colors.white))),
+              DataCell(Text(log.usage.endTime ?? 'Active',
+                  style: const TextStyle(color: Colors.white))),
+              DataCell(Text(log.usage.usageDetails,
+                  style: const TextStyle(color: Colors.white))),
+              DataCell(
+                Row(
+                  children: [
+                    Container(
+                      margin: const EdgeInsets.symmetric(horizontal: 4.0),
+                      child: TextButton(
+                        style: TextButton.styleFrom(
+                          foregroundColor: Colors.white, backgroundColor: Colors.blue,
+                        ),
+                        onPressed: () {
+                          _showEditDialog(context, log);
+                        },
+                        child: const Text('Edit'),
                       ),
-                      onPressed: () {
-                        _showEditDialog(context, log);
-                      },
-                      child: const Text('Edit'),
                     ),
-                  ),
-                  Container(
-                    margin: const EdgeInsets.symmetric(horizontal: 4.0),
-                    child: TextButton(
-                      style: TextButton.styleFrom(
-                        foregroundColor: Colors.white, backgroundColor: Colors.red,
+                    Container(
+                      margin: const EdgeInsets.symmetric(horizontal: 4.0),
+                      child: TextButton(
+                        style: TextButton.styleFrom(
+                          foregroundColor: Colors.white, backgroundColor: Colors.red,
+                        ),
+                        onPressed: () {
+                          _showEndDialog(context, log);
+                        },
+                        child: const Text('End'),
                       ),
-                      onPressed: () {
-                        _showEndDialog(context, log);
-                      },
-                      child: const Text('End'),
                     ),
-                  ),
-                  Container(
-                    margin: const EdgeInsets.symmetric(horizontal: 4.0),
-                    child: TextButton(
-                      style: TextButton.styleFrom(
-                        foregroundColor: Colors.white, backgroundColor: Colors.orange,
+                    Container(
+                      margin: const EdgeInsets.symmetric(horizontal: 4.0),
+                      child: TextButton(
+                        style: TextButton.styleFrom(
+                          foregroundColor: Colors.white, backgroundColor: Colors.orange,
+                        ),
+                        onPressed: () {
+                          _showCancelDialog(context, log);
+                        },
+                        child: const Text('Cancel'),
                       ),
-                      onPressed: () {
-                        _showCancelDialog(context, log);
-                      },
-                      child: const Text('Cancel'),
                     ),
-                  ),
-                ],
-              )
-            ),
-          ]);
+                  ],
+                )
+              ),
+            ],
+          );
         }).toList(),
       ),
     );

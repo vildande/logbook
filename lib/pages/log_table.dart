@@ -4,7 +4,9 @@ import '../components/data_table_widget.dart';
 import '../components/search_widget.dart';
 
 class DataTablePage extends StatefulWidget {
-  const DataTablePage({super.key});
+  final String? initialRecordName;
+
+  const DataTablePage({super.key, this.initialRecordName});
 
   @override
   _DataTablePageState createState() => _DataTablePageState();
@@ -21,6 +23,16 @@ class _DataTablePageState extends State<DataTablePage> {
   void initState() {
     super.initState();
     _usagesWithUser = DataLoader().loadUsagesWithUser();
+    _usagesWithUser.then((usages) {
+      if (widget.initialRecordName != null) {
+        setState(() {
+          _searchQuery = widget.initialRecordName!;
+          _filterUsages(usages);
+        });
+      } else {
+        _filterUsages(usages);
+      }
+    });
   }
 
   void _filterUsages(List<UsageWithUser> usages) {
@@ -100,13 +112,16 @@ class _DataTablePageState extends State<DataTablePage> {
 
             return Column(
               children: [
-                SearchWidget(onSearch: (query) {
-                  setState(() {
-                    _searchQuery = query;
-                    _filterUsages(usagesWithUser);
-                    _currentPage = 0; // Reset to first page on search
-                  });
-                }),
+                SearchWidget(
+                  onSearch: (query) {
+                    setState(() {
+                      _searchQuery = query;
+                      _filterUsages(usagesWithUser);
+                      _currentPage = 0; // Reset to first page on search
+                    });
+                  },
+                  initialValue: _searchQuery,
+                ),
                 Expanded(
                   child: DataTableWidget(
                     usagesWithUser: _filteredUsagesWithUser,

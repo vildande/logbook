@@ -31,24 +31,36 @@ class _HomePageState extends State<HomePage> {
               const SizedBox(height: 20),
               // Top
               Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
-                child:  Row(
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
+                child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    const Icon(
-                      Icons.cabin,
-                      color: Colors.white,
-                      size: 30,
+                    Image.asset(
+                      'assets/ssh.png',
+                      height: 40,
+                      width: 40,
                     ),
-                    IconButton(
-                      icon: const Icon(Icons.menu, color: Colors.white, size: 30), 
+                    ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color.fromARGB(255, 31, 38, 51),
+                        padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 20),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(20),
+                          side: const BorderSide(color: Colors.white),
+                        ),
+                      ),
                       onPressed: () {
                         Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                                builder: (context) => const DataTablePage()));
-                      }
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const DataTablePage(),
+                          ),
+                        );
+                      },
+                      child: const Text(
+                        'Incubation history',
+                        style: TextStyle(color: Colors.white, fontSize: 16),
+                      ),
                     ),
                   ],
                 ),
@@ -58,8 +70,7 @@ class _HomePageState extends State<HomePage> {
                 mainAxisAlignment: MainAxisAlignment.start,
                 children: [
                   Container(
-                    padding:
-                        const EdgeInsets.only(top: 15, bottom: 40, left: 20),
+                    padding: const EdgeInsets.only(top: 15, bottom: 10, left: 20),
                     child: const Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -82,6 +93,21 @@ class _HomePageState extends State<HomePage> {
                   ),
                 ],
               ),
+              SizedBox(height: 10,),
+              // Today's Incubations header
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                alignment: Alignment.centerLeft,
+                child: const Text(
+                  "Today's Incubations",
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 18,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 10),
               // Lower part
               Expanded(
                 child: Container(
@@ -93,31 +119,36 @@ class _HomePageState extends State<HomePage> {
                     ),
                   ),
                   child: Padding(
-                    padding: const EdgeInsets.all(10),
+                    padding: const EdgeInsets.only(top: 10, left: 10, right: 10, bottom: 55),
                     child: FutureBuilder<List<UsageWithUser>>(
                       future: _usagesWithUser,
                       builder: (context, snapshot) {
-                        if (snapshot.connectionState ==
-                            ConnectionState.waiting) {
-                          return const Center(
-                              child: CircularProgressIndicator());
+                        if (snapshot.connectionState == ConnectionState.waiting) {
+                          return const Center(child: CircularProgressIndicator());
                         } else if (snapshot.hasError) {
-                          return const Center(
-                              child: Text('Error loading data'));
+                          return const Center(child: Text('Error loading data'));
                         } else {
                           var usagesWithUser = snapshot.data!;
                           return ListView.separated(
                             itemCount: usagesWithUser.length,
-                            separatorBuilder: (context, index) =>
-                                const SizedBox(height: 20),
+                            separatorBuilder: (context, index) => const SizedBox(height: 20),
                             itemBuilder: (context, index) {
                               var usageWithUser = usagesWithUser[index];
                               return IncubCard(
-                                name: usageWithUser.user.name,
-                                startTime: usageWithUser.usage.startTime,
-                                endTime: usageWithUser.usage.endTime,
-                                incubatorType:
-                                    "${usageWithUser.usage.incubatorType} Incubator",
+                                usageWithUser: usageWithUser,
+                                onTap: () {
+                                  setState(() {
+                                    usageWithUser.isExpanded = !usageWithUser.isExpanded;
+                                  });
+                                },
+                                onNavigate: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => DataTablePage(initialRecordName: usageWithUser.user.name),
+                                    ),
+                                  );
+                                },
                               );
                             },
                           );
@@ -141,9 +172,11 @@ class _HomePageState extends State<HomePage> {
                 ),
                 onPressed: () {
                   Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                          builder: (context) => const AddIncubPage()));
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const AddIncubPage(),
+                    ),
+                  );
                 },
                 child: const Text(
                   'Start Incubation',
