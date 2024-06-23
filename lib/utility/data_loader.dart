@@ -9,13 +9,15 @@ class DataLoader {
       (user) => user.usages.map((usage) => UsageWithUser(user, usage))
     ).toList();
     
-    usageWithUsers.sort((a,b) => a.usage.status.toLowerCase() == 'completed' 
-    || a.usage.status.toLowerCase() == 'cancelled'  ? 1 : -1);
+    
     usageWithUsers.sort((a, b) {
       DateTime startTimeA = DateTime.parse(a.usage.startTime);
       DateTime startTimeB = DateTime.parse(b.usage.startTime);
       return startTimeB.compareTo(startTimeA);
     });
+
+    usageWithUsers.sort((a,b) => a.usage.status.toLowerCase() == 'completed' 
+    || a.usage.status.toLowerCase() == 'cancelled'  ? 1 : -1);
 
     // In Progress 
     // Cancelled
