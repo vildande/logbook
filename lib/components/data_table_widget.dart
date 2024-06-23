@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 import '../utility/data_loader.dart';
 
 class DataTableWidget extends StatelessWidget {
@@ -25,7 +27,7 @@ class DataTableWidget extends StatelessWidget {
       if (initialRecord != null) {
         int recordIndex = usagesWithUser.indexOf(initialRecord!);
         if (recordIndex != -1 && recordIndex >= startIndex && recordIndex < endIndex) {
-          Scrollable.ensureVisible(context, duration: Duration(milliseconds: 300));
+          Scrollable.ensureVisible(context, duration: const Duration(milliseconds: 300));
         }
       }
     });
@@ -126,9 +128,9 @@ class DataTableWidget extends StatelessWidget {
   void _showEditDialog(BuildContext context, UsageWithUser log) {
     TextEditingController nameController = TextEditingController(text: log.user.name);
     TextEditingController phoneController = TextEditingController(text: log.user.phoneNumber);
-    TextEditingController incubatorTypeController = TextEditingController(text: log.usage.incubatorType);
     TextEditingController usageDetailsController = TextEditingController(text: log.usage.usageDetails);
-
+    String incubatorType = log.usage.incubatorType;
+    
     bool isEditable = false;
 
     showDialog(
@@ -145,7 +147,13 @@ class DataTableWidget extends StatelessWidget {
                   children: [
                     _buildEditableRow('Name', nameController, isEditable),
                     _buildEditableRow('Phone Number', phoneController, isEditable),
-                    _buildEditableRow('Incubator Type', incubatorTypeController, isEditable),
+                    _buildDropdownRow('Incubator Type', incubatorType, (value) {
+                      if (isEditable) {
+                        setState(() {
+                          incubatorType = value!;
+                        });
+                      }
+                    }, isEditable),
                     _buildInfoRow('Start Time', log.usage.startTime),
                     _buildInfoRow('End Time', log.usage.endTime ?? 'Active'),
                     _buildEditableRow('Usage Details', usageDetailsController, isEditable, maxLines: 5),
@@ -167,10 +175,33 @@ class DataTableWidget extends StatelessWidget {
                 ),
                 isEditable
                     ? TextButton(
-                        onPressed: () {
-                          // Handle the backend call here with the updated information
-                          print("Edited with new values");
-                          Navigator.of(context).pop();
+                        onPressed: () async {
+                          if (_validateInputs(context, nameController.text, phoneController.text, usageDetailsController.text)) {
+                            if (log.user.name == nameController.text &&
+                                log.user.phoneNumber == phoneController.text &&
+                                log.usage.usageDetails == usageDetailsController.text &&
+                                log.usage.incubatorType == incubatorType) {
+                              _showPopupMessage(context, "No changes detected.");
+                            } else {
+                              var updatedData = {
+                                'id': log.usage.usageID,
+                                'name': nameController.text,
+                                'phone': phoneController.text,
+                                'usage': usageDetailsController.text,
+                                'type': incubatorType,
+                                'start': log.usage.startTime,
+                                'end': log.usage.endTime,
+                                'status': log.usage.status
+                              };
+                              var response = await _sendDataToApi(updatedData, 'edit');
+                              if (response) {
+                                print("Edited with new values");
+                                Navigator.of(context).pop();
+                              } else {
+                                _showPopupMessage(context, "Something went wrong, please try again.");
+                              }
+                            }
+                          }
                         },
                         child: const Text('Confirm'),
                       )
@@ -218,9 +249,14 @@ class DataTableWidget extends StatelessWidget {
               child: const Text('Go back'),
             ),
             TextButton(
-              onPressed: () {
-                print("Ended the incubation");
-                Navigator.of(context).pop();
+              onPressed: () async {
+                var response = await _sendDataToApi({'id': log.usage.usageID, 'end': DateTime.now().toIso8601String()}, 'end');
+                if (response) {
+                  print("Ended the incubation");
+                  Navigator.of(context).pop();
+                } else {
+                  _showPopupMessage(context, "Something went wrong, please try again.");
+                }
               },
               child: const Text('End the incubation'),
             ),
@@ -270,12 +306,76 @@ class DataTableWidget extends StatelessWidget {
               child: const Text('Go back'),
             ),
             TextButton(
-              onPressed: () {
-                // Handle the backend call here with the comment
-                print("Cancelled with comment: ${commentController.text}");
-                Navigator.of(context).pop();
+              onPressed: () async {
+                var response = await _sendDataToApi({
+                  'id': log.usage.usageID,
+                  'comment': commentController.text,
+                  'end': DateTime.now().toIso8601String()
+                }, 'cancel');
+                if (response) {
+                  print("Cancelled with comment: ${commentController.text}");
+                  Navigator.of(context).pop();
+                } else {
+                  _showPopupMessage(context, "Something went wrong, please try again.");
+                }
               },
               child: const Text('Cancel the incubation'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  bool _validateInputs(BuildContext context, String name, String phone, String usageDetails) {
+    if (name.isEmpty || !RegExp(r'^[a-zA-Z ]+$').hasMatch(name)) {
+      _showPopupMessage(context, "Please enter a valid name.");
+      return false;
+    }
+    if (phone.isEmpty || !RegExp(r'^\+?[0-9 ]+$').hasMatch(phone)) {
+      _showPopupMessage(context, "Please enter a valid phone number.");
+      return false;
+    }
+    if (usageDetails.length < 10) {
+      _showPopupMessage(context, "Usage description must be at least 10 characters long.");
+      return false;
+    }
+    return true;
+  }
+
+  Future<bool> _sendDataToApi(Map<String, dynamic> data, String endpoint) async {
+    final url = Uri.parse('http://your-flask-api-url.com/$endpoint');
+    try {
+      final response = await http.post(
+        url,
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode(data),
+      ).timeout(const Duration(seconds: 10));
+
+      if (response.statusCode == 200) {
+        return true;
+      } else {
+        return false;
+      }
+    } catch (e) {
+      return false;
+    }
+  }
+
+  void _showPopupMessage(BuildContext context, String message) {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text("Error"),
+          content: Text(message),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: const Text("OK"),
             ),
           ],
         );
@@ -316,6 +416,41 @@ class DataTableWidget extends StatelessWidget {
                 ? _buildTextInputField(controller: controller, hintText: label, maxLines: maxLines)
                 : Text(
                     controller.text,
+                    style: const TextStyle(color: Colors.black87, fontSize: 16),
+                    textAlign: TextAlign.right,
+                  ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildDropdownRow(String label, String selectedValue, ValueChanged<String?> onChanged, bool isEditable) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 5),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text('$label:', style: const TextStyle(color: Colors.black87, fontSize: 16)),
+          const SizedBox(width: 10),
+          Flexible(
+            child: isEditable
+                ? DropdownButtonFormField<String>(
+                    value: selectedValue,
+                    items: ['Top', 'Bottom']
+                        .map((label) => DropdownMenuItem(
+                              child: Text(label),
+                              value: label,
+                            ))
+                        .toList(),
+                    onChanged: onChanged,
+                    decoration: const InputDecoration(
+                      contentPadding: EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                      border: OutlineInputBorder(),
+                    ),
+                  )
+                : Text(
+                    selectedValue,
                     style: const TextStyle(color: Colors.black87, fontSize: 16),
                     textAlign: TextAlign.right,
                   ),
