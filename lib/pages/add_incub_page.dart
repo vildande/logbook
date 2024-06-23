@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 
 class AddIncubPage extends StatefulWidget {
   const AddIncubPage({super.key});
@@ -35,27 +37,110 @@ class _AddIncubPageState extends State<AddIncubPage> {
     });
   }
 
-  void _startIncubation() {
+  Future<void> _startIncubation() async {
+    String contactName = _contactNameController.text;
+    String contactPhone = _contactPhoneController.text;
+    String usageDetails = _usageController.text;
 
-    if (_topIncubUsed || _bottomIncubUsed) {
-      String contactName = _contactNameController.text;
-      String contactPhone = _contactPhoneController.text;
-      String usageDetails = _usageController.text;
-      DateTime timeNow = DateTime.now();
+    if (!_validateInputs(contactName, contactPhone, usageDetails)) {
+      return;
+    }
 
-      List<String> incubationRecords = [];
+    DateTime timeNow = DateTime.now();
 
-      if (_topIncubUsed) {
-        incubationRecords.add("{'name': '${contactName}', 'phone': '${contactPhone}', 'usage': '${usageDetails}', 'type': 'Top', 'start': ${timeNow.toIso8601String()}}");
-      }
-      if (_bottomIncubUsed) {
-        incubationRecords.add("{'name': '${contactName}', 'phone': '${contactPhone}', 'usage': '${usageDetails}', 'type': 'Bottom', 'start': ${timeNow.toIso8601String()}}");
-      }
+    List<Map<String, dynamic>> incubationRecords = [];
 
-      for(var s in incubationRecords) {
-        print(s);
+    if (_topIncubUsed) {
+      incubationRecords.add({
+        'name': contactName,
+        'phone': contactPhone,
+        'usage': usageDetails,
+        'type': 'Top',
+        'start': timeNow.toIso8601String()
+      });
+    }
+    if (_bottomIncubUsed) {
+      incubationRecords.add({
+        'name': contactName,
+        'phone': contactPhone,
+        'usage': usageDetails,
+        'type': 'Bottom',
+        'start': timeNow.toIso8601String()
+      });
+    }
+
+    for (var record in incubationRecords) {
+      var response = await _sendIncubationData(record);
+      if (!response) {
+        _showPopupMessage("Something went wrong, please try again.");
+        return;
       }
     }
+
+    _showPopupMessage("Congratulations, incubation started successfully!", success: true);
+  }
+
+  bool _validateInputs(String name, String phone, String usageDetails) {
+    if (name.isEmpty || !RegExp(r'^[a-zA-Z ]+$').hasMatch(name)) {
+      _showPopupMessage("Please enter a valid name.");
+      return false;
+    }
+    if (phone.isEmpty || !RegExp(r'^\+?[0-9 ]+$').hasMatch(phone)) {
+      _showPopupMessage("Please enter a valid phone number.");
+      return false;
+    }
+    if (!_topIncubUsed && !_bottomIncubUsed) {
+      _showPopupMessage("Please select at least one incubator type.");
+      return false;
+    }
+    if (usageDetails.length < 10) {
+      _showPopupMessage("Usage description must be at least 10 characters long.");
+      return false;
+    }
+    return true;
+  }
+
+  Future<bool> _sendIncubationData(Map<String, dynamic> data) async {
+    final url = Uri.parse('http://your-flask-api-url.com/incubation');
+    try {
+      final response = await http.post(
+        url,
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode(data),
+      ).timeout(const Duration(seconds: 10));
+
+      if (response.statusCode == 200) {
+        return true;
+      } else {
+        return false;
+      }
+    } catch (e) {
+      return false;
+    }
+  }
+
+  void _showPopupMessage(String message, {bool success = false}) {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text(success ? "Success" : "Error"),
+          content: Text(message),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+                if (success) {
+                  Navigator.of(context).pop();
+                }
+              },
+              child: Text(success ? "OK" : "Try Again"),
+            ),
+          ],
+        );
+      },
+    );
   }
 
   @override
@@ -88,13 +173,9 @@ class _AddIncubPageState extends State<AddIncubPage> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text("Name",
-              style: TextStyle(color: Colors.white, fontSize: 24)),
-          // const Text("(First name and Last name / phone number)",
-          //     style: TextStyle(color: Colors.white70, fontSize: 14)),
+          const Text("Name", style: TextStyle(color: Colors.white, fontSize: 24)),
           const SizedBox(height: 10),
-          _buildTextInputField(
-              controller: _contactNameController, hintText: "John Doe"),
+          _buildTextInputField(controller: _contactNameController, hintText: "John Doe"),
         ],
       ),
     );
@@ -106,11 +187,9 @@ class _AddIncubPageState extends State<AddIncubPage> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text("Phone number",
-              style: TextStyle(color: Colors.white, fontSize: 24)),
+          const Text("Phone number", style: TextStyle(color: Colors.white, fontSize: 24)),
           const SizedBox(height: 10),
-          _buildTextInputField(
-              controller: _contactPhoneController, hintText: "+7 777 777 77 77"),
+          _buildTextInputField(controller: _contactPhoneController, hintText: "+7 777 777 77 77"),
         ],
       ),
     );
@@ -122,20 +201,17 @@ class _AddIncubPageState extends State<AddIncubPage> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text("Which Incubator(s)?",
-              style: TextStyle(color: Colors.white, fontSize: 24)),
+          const Text("Which Incubator(s)?", style: TextStyle(color: Colors.white, fontSize: 24)),
           Row(
             children: [
               Checkbox(value: _topIncubUsed, onChanged: _toggleTopIncub),
-              const Text("Top",
-                  style: TextStyle(color: Colors.white, fontSize: 18)),
+              const Text("Top", style: TextStyle(color: Colors.white, fontSize: 18)),
             ],
           ),
           Row(
             children: [
               Checkbox(value: _bottomIncubUsed, onChanged: _toggleBottomIncub),
-              const Text("Bottom",
-                  style: TextStyle(color: Colors.white, fontSize: 18)),
+              const Text("Bottom", style: TextStyle(color: Colors.white, fontSize: 18)),
             ],
           ),
         ],
@@ -149,11 +225,8 @@ class _AddIncubPageState extends State<AddIncubPage> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text("Usage Description",
-              style: TextStyle(color: Colors.white, fontSize: 24)),
-          const Text(
-              "(quantity and type of tubes / content / temperature / rpm)",
-              style: TextStyle(color: Colors.white70, fontSize: 14)),
+          const Text("Usage Description", style: TextStyle(color: Colors.white, fontSize: 24)),
+          const Text("(quantity and type of tubes / content / temperature / rpm)", style: TextStyle(color: Colors.white70, fontSize: 14)),
           const SizedBox(height: 10),
           _buildTextInputField(
             controller: _usageController,
@@ -180,8 +253,7 @@ class _AddIncubPageState extends State<AddIncubPage> {
       ),
       child: TextFormField(
         controller: controller,
-        decoration:
-            InputDecoration(hintText: hintText, border: InputBorder.none),
+        decoration: InputDecoration(hintText: hintText, border: InputBorder.none),
         maxLines: maxLines,
         keyboardType: keyboardType,
       ),
