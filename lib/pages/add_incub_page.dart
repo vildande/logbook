@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
-import 'dart:convert';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import '../models/user_model.dart';
+import '../utility/data_loader.dart';
+import '../bloc/user_bloc.dart';
+import 'dart:math';
+import 'package:intl/intl.dart';
 
 class AddIncubPage extends StatefulWidget {
   const AddIncubPage({super.key});
@@ -47,37 +51,51 @@ class _AddIncubPageState extends State<AddIncubPage> {
     }
 
     DateTime timeNow = DateTime.now();
+    String formattedTimeNow = DateFormat('yyyy-MM-dd HH:mm').format(timeNow);
 
-    List<Map<String, dynamic>> incubationRecords = [];
-
+    List<User> newUsers = [];
     if (_topIncubUsed) {
-      incubationRecords.add({
-        'name': contactName,
-        'phone': contactPhone,
-        'usage': usageDetails,
-        'type': 'Top',
-        'start': timeNow.toIso8601String()
-      });
+      newUsers.add(User(
+        userID: _generateRandomID(),
+        name: contactName,
+        phoneNumber: contactPhone,
+        usageDetails: usageDetails,
+        incubatorType: 'Top',
+        startTime: formattedTimeNow,
+        endTime: null,
+        comment: 'Press if Cancelled',
+        status: 'In Progress',
+      ));
     }
+
     if (_bottomIncubUsed) {
-      incubationRecords.add({
-        'name': contactName,
-        'phone': contactPhone,
-        'usage': usageDetails,
-        'type': 'Bottom',
-        'start': timeNow.toIso8601String()
-      });
+      newUsers.add(User(
+        userID: _generateRandomID(),
+        name: contactName,
+        phoneNumber: contactPhone,
+        usageDetails: usageDetails,
+        incubatorType: 'Bottom',
+        startTime: formattedTimeNow,
+        endTime: null,
+        comment: 'Press if Cancelled',
+        status: 'In Progress',
+      ));
     }
 
-    for (var record in incubationRecords) {
-      var response = await _sendIncubationData(record);
-      if (!response) {
-        _showPopupMessage("Something went wrong, please try again.");
-        return;
+    try {
+      for (var newUser in newUsers) {
+        context.read<UserBloc>().add(AddUserEvent(user: newUser));
       }
+      _showPopupMessage("Congratulations, incubation started successfully!",
+          success: true);
+    } catch (e) {
+      _showPopupMessage("Something went wrong, please try again.");
     }
+  }
 
-    _showPopupMessage("Congratulations, incubation started successfully!", success: true);
+  int _generateRandomID() {
+    Random random = Random();
+    return random.nextInt(90000000) + 10000000;
   }
 
   bool _validateInputs(String name, String phone, String usageDetails) {
@@ -85,7 +103,7 @@ class _AddIncubPageState extends State<AddIncubPage> {
       _showPopupMessage("Please enter a valid name.");
       return false;
     }
-    if (phone.isEmpty || !RegExp(r'^\+?[0-9 ]+$').hasMatch(phone)) {
+    if (phone.isEmpty || !RegExp(r'^\+?[0-9 ]{10,15}$').hasMatch(phone)) {
       _showPopupMessage("Please enter a valid phone number.");
       return false;
     }
@@ -94,29 +112,11 @@ class _AddIncubPageState extends State<AddIncubPage> {
       return false;
     }
     if (usageDetails.length < 10) {
-      _showPopupMessage("Usage description must be at least 10 characters long.");
+      _showPopupMessage(
+          "Usage description must be at least 10 characters long.");
       return false;
     }
     return true;
-  }
-
-  Future<bool> _sendIncubationData(Map<String, dynamic> data) async {
-    final url = Uri.parse('http://your-flask-api-url.com/incubation');
-    try {
-      final response = await http.post(
-        url,
-        headers: {'Content-Type': 'application/json'},
-        body: jsonEncode(data),
-      ).timeout(const Duration(seconds: 10));
-
-      if (response.statusCode == 200) {
-        return true;
-      } else {
-        return false;
-      }
-    } catch (e) {
-      return false;
-    }
   }
 
   void _showPopupMessage(String message, {bool success = false}) {
@@ -132,7 +132,8 @@ class _AddIncubPageState extends State<AddIncubPage> {
               onPressed: () {
                 Navigator.of(context).pop();
                 if (success) {
-                  Navigator.of(context).pop();
+                  Navigator.of(context).pop(
+                      true); // Notify the previous screen that a new record was added
                 }
               },
               child: Text(success ? "OK" : "Try Again"),
@@ -173,9 +174,11 @@ class _AddIncubPageState extends State<AddIncubPage> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text("Name", style: TextStyle(color: Colors.white, fontSize: 24)),
+          const Text("Name",
+              style: TextStyle(color: Colors.white, fontSize: 24)),
           const SizedBox(height: 10),
-          _buildTextInputField(controller: _contactNameController, hintText: "John Doe"),
+          _buildTextInputField(
+              controller: _contactNameController, hintText: "John Doe"),
         ],
       ),
     );
@@ -187,9 +190,12 @@ class _AddIncubPageState extends State<AddIncubPage> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text("Phone number", style: TextStyle(color: Colors.white, fontSize: 24)),
+          const Text("Phone number",
+              style: TextStyle(color: Colors.white, fontSize: 24)),
           const SizedBox(height: 10),
-          _buildTextInputField(controller: _contactPhoneController, hintText: "+7 777 777 77 77"),
+          _buildTextInputField(
+              controller: _contactPhoneController,
+              hintText: "+7 777 777 77 77"),
         ],
       ),
     );
@@ -201,17 +207,20 @@ class _AddIncubPageState extends State<AddIncubPage> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text("Which Incubator(s)?", style: TextStyle(color: Colors.white, fontSize: 24)),
+          const Text("Which Incubator(s)?",
+              style: TextStyle(color: Colors.white, fontSize: 24)),
           Row(
             children: [
               Checkbox(value: _topIncubUsed, onChanged: _toggleTopIncub),
-              const Text("Top", style: TextStyle(color: Colors.white, fontSize: 18)),
+              const Text("Top",
+                  style: TextStyle(color: Colors.white, fontSize: 18)),
             ],
           ),
           Row(
             children: [
               Checkbox(value: _bottomIncubUsed, onChanged: _toggleBottomIncub),
-              const Text("Bottom", style: TextStyle(color: Colors.white, fontSize: 18)),
+              const Text("Bottom",
+                  style: TextStyle(color: Colors.white, fontSize: 18)),
             ],
           ),
         ],
@@ -225,8 +234,11 @@ class _AddIncubPageState extends State<AddIncubPage> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text("Usage Description", style: TextStyle(color: Colors.white, fontSize: 24)),
-          const Text("(quantity and type of tubes / content / temperature / rpm)", style: TextStyle(color: Colors.white70, fontSize: 14)),
+          const Text("Usage Description",
+              style: TextStyle(color: Colors.white, fontSize: 24)),
+          const Text(
+              "(quantity and type of tubes / content / temperature / rpm)",
+              style: TextStyle(color: Colors.white70, fontSize: 14)),
           const SizedBox(height: 10),
           _buildTextInputField(
             controller: _usageController,
@@ -253,7 +265,8 @@ class _AddIncubPageState extends State<AddIncubPage> {
       ),
       child: TextFormField(
         controller: controller,
-        decoration: InputDecoration(hintText: hintText, border: InputBorder.none),
+        decoration:
+            InputDecoration(hintText: hintText, border: InputBorder.none),
         maxLines: maxLines,
         keyboardType: keyboardType,
       ),
@@ -262,7 +275,7 @@ class _AddIncubPageState extends State<AddIncubPage> {
 
   Widget _buildStartIncubationButton() {
     return Padding(
-      padding: const EdgeInsets.only(top: 20),
+      padding: const EdgeInsets.symmetric(vertical: 20),
       child: ElevatedButton(
         onPressed: _startIncubation,
         style: ElevatedButton.styleFrom(

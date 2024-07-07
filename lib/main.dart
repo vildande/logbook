@@ -1,24 +1,46 @@
 import 'package:flutter/material.dart';
-import 'package:logbook/pages/add_incub_page.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:logbook/bloc/user_bloc.dart';
 import 'package:logbook/pages/home_page.dart';
-import 'package:logbook/pages/log_table.dart';
+import 'package:logbook/utility/data_loader.dart';
 
 void main() {
-  runApp(const MainApp());
+  runApp(const MyApp());
 }
 
-class MainApp extends StatelessWidget {
-  const MainApp({super.key});
+class MyApp extends StatelessWidget {
+  const MyApp({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-        debugShowCheckedModeBanner: false,
-        initialRoute: '/',
-        routes: {
-          '/': (context) => HomePage(),
-          '/add-incubation': (context) => AddIncubPage(),
-          '/log-table': (context) => DataTablePage()
-        });
+    return MultiRepositoryProvider(
+      providers: [
+        RepositoryProvider(create: (context) => DataLoader()),
+      ],
+      child: MultiBlocProvider(
+        providers: [
+          BlocProvider(
+            lazy: false,
+            create: (context) =>
+                UserBloc(dataLoader: context.read<DataLoader>())
+                  ..add(GetInProgressUsersEvent()),
+          ),
+        ],
+        child: MaterialApp(
+          title: 'Flutter Bloc API',
+          builder: (context, child) {
+            final mediaQueryData = MediaQuery.of(context);
+            return MediaQuery(
+              data: mediaQueryData.copyWith(textScaleFactor: 1.0),
+              child: child!,
+            );
+          },
+          theme: ThemeData(
+            useMaterial3: true,
+          ),
+          home: const HomePage(),
+        ),
+      ),
+    );
   }
 }

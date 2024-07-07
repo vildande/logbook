@@ -1,96 +1,111 @@
-import 'dart:convert';  // Add this import statement
-import 'package:flutter/services.dart' show rootBundle;
+import 'dart:convert';
+import 'package:http/http.dart' as http;
 import 'package:logbook/models/user_model.dart';
+import 'package:intl/intl.dart';
+import 'data_provider.dart';
 
 class DataLoader {
-  Future<List<UsageWithUser>> loadUsagesWithUser() async {
-    final jsonString = await rootBundle.loadString('assets/sample_data.json');
-    List<User> users = parseUsers(jsonString);
-    List<UsageWithUser> usageWithUsers = users.expand(
-      (user) => user.usages.map((usage) => UsageWithUser(usage: usage, user: user))
-    ).toList();
+  final String apiUrl = 'https://web-production-9be6.up.railway.app/users';
 
-    usageWithUsers.sort((a, b) {
-      DateTime startTimeA = DateTime.parse(a.usage.startTime);
-      DateTime startTimeB = DateTime.parse(b.usage.startTime);
-      return startTimeB.compareTo(startTimeA);
-    });
+  Future<List<User>> loadUsers() async {
+    final response = await DataProvider.getRequest(endpoint: apiUrl);
 
-    usageWithUsers.sort((a, b) => a.usage.status.toLowerCase() == 'completed' 
-    || a.usage.status.toLowerCase() == 'cancelled' ? 1 : -1);
+    if (response.statusCode == 200) {
+      List<User> users = parseUsers(jsonDecode(response.body) as List<dynamic>);
 
-    return usageWithUsers;
+      users.sort((a, b) {
+        DateTime startTimeA = parseDate(a.startTime);
+        DateTime startTimeB = parseDate(b.startTime);
+        return startTimeB.compareTo(startTimeA);
+      });
+
+      users.sort((a, b) => (a.status.toLowerCase() == 'completed' ||
+              a.status.toLowerCase() == 'cancelled')
+          ? 1
+          : -1);
+
+      return users;
+    } else {
+      print('Failed to load data. Status code: ${response.statusCode}');
+      print('Response body: ${response.body}');
+      throw Exception('Failed to load data');
+    }
   }
-}
 
-class UsageWithUser {
-  final User user;
-  final Usage usage;
-  bool isExpanded;
+  Future<List<User>> loadInProgressUsers() async {
+    final response = await DataProvider.getRequest(endpoint: apiUrl);
 
-  UsageWithUser({
-    required this.user,
-    required this.usage,
-    this.isExpanded = false,
-  });
-}
-
-class User {
-  final int userID;
-  final String name;
-  final String phoneNumber;
-  final List<Usage> usages;
-
-  User({
-    required this.userID,
-    required this.name,
-    required this.phoneNumber,
-    required this.usages,
-  });
-
-  factory User.fromJson(Map<String, dynamic> json) {
-    return User(
-      userID: json['UserID'],
-      name: json['Name'],
-      phoneNumber: json['PhoneNumber'],
-      usages: (json['Usages'] as List).map((i) => Usage.fromJson(i)).toList(),
-    );
+    if (response.statusCode == 200) {
+      List<User> users = parseUsers(jsonDecode(response.body) as List<dynamic>);
+      return users
+          .where((user) => user.status.toLowerCase() == 'in progress')
+          .toList();
+    } else {
+      print('Failed to load data. Status code: ${response.statusCode}');
+      print('Response body: ${response.body}');
+      throw Exception('Failed to load data');
+    }
   }
-}
 
-class Usage {
-  final int usageID;
-  final String usageDetails;
-  final String incubatorType;
-  final String startTime;
-  final String? endTime;
-  final String comment;
-  final String status;
-
-  Usage({
-    required this.usageID,
-    required this.usageDetails,
-    required this.incubatorType,
-    required this.startTime,
-    this.endTime,
-    required this.comment,
-    required this.status,
-  });
-
-  factory Usage.fromJson(Map<String, dynamic> json) {
-    return Usage(
-      usageID: json['UsageID'],
-      usageDetails: json['UsageDetails'],
-      incubatorType: json['IncubatorType'],
-      startTime: json['StartTime'],
-      endTime: json['EndTime'],
-      comment: json['Comment'],
-      status: json['Status'],
-    );
+  DateTime parseDate(String dateStr) {
+    try {
+      return DateFormat('yyyy-MM-dd HH:mm').parse(dateStr);
+    } catch (e) {
+      throw FormatException('Invalid date format', dateStr);
+    }
   }
-}
 
-List<User> parseUsers(String jsonStr) {
-  final parsed = jsonDecode(jsonStr)['Users'].cast<Map<String, dynamic>>();
-  return parsed.map<User>((json) => User.fromJson(json)).toList();
+  Future<void> sendIncubationData(User user) async {
+    try {
+      final Map<String, dynamic> userData = user.toJson();
+      userData['StartTime'] = user.startTime.isNotEmpty
+          ? DateFormat('yyyy-MM-dd HH:mm')
+              .format(DateTime.parse(user.startTime))
+          : null;
+      userData['EndTime'] = user.endTime != null
+          ? DateFormat('yyyy-MM-dd HH:mm').format(DateTime.parse(user.endTime!))
+          : null;
+
+      final response = await DataProvider.postRequest(
+        endpoint: apiUrl,
+        body: userData,
+      );
+
+      if (response.statusCode != 201) {
+        print('Failed to add user. Status code: ${response.statusCode}');
+        print('Response body: ${response.body}');
+        throw Exception('Failed to add user');
+      }
+    } catch (e) {
+      print('Error sending incubation data: $e');
+      rethrow;
+    }
+  }
+
+  Future<void> updateIncubationData(User user) async {
+    try {
+      final Map<String, dynamic> userData = user.toJson();
+      userData['StartTime'] = user.startTime.isNotEmpty
+          ? DateFormat('yyyy-MM-dd HH:mm')
+              .format(DateTime.parse(user.startTime))
+          : null;
+      userData['EndTime'] = user.endTime != null
+          ? DateFormat('yyyy-MM-dd HH:mm').format(DateTime.parse(user.endTime!))
+          : null;
+
+      final response = await DataProvider.putRequest(
+        endpoint: '$apiUrl/${user.userID}',
+        body: userData,
+      );
+
+      if (response.statusCode != 200) {
+        print('Failed to update user. Status code: ${response.statusCode}');
+        print('Response body: ${response.body}');
+        throw Exception('Failed to update user');
+      }
+    } catch (e) {
+      print('Error updating incubation data: $e');
+      rethrow;
+    }
+  }
 }

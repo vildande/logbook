@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:logbook/models/user_model.dart';
 import '../utility/data_loader.dart';
+import '../bloc/user_bloc.dart';
 import '../components/data_table_widget.dart';
-import '../components/search_widget.dart';
 
 class DataTablePage extends StatefulWidget {
   final String? initialRecordName;
@@ -13,8 +15,7 @@ class DataTablePage extends StatefulWidget {
 }
 
 class _DataTablePageState extends State<DataTablePage> {
-  late Future<List<UsageWithUser>> _usagesWithUser;
-  List<UsageWithUser> _filteredUsagesWithUser = [];
+  List<User> _filteredUsers = [];
   String _searchQuery = '';
   final int logsPerPage = 10;
   int _currentPage = 0;
@@ -22,42 +23,24 @@ class _DataTablePageState extends State<DataTablePage> {
   @override
   void initState() {
     super.initState();
-    _usagesWithUser = DataLoader().loadUsagesWithUser();
-    _usagesWithUser.then((usages) {
-      if (widget.initialRecordName != null) {
-        setState(() {
-          _searchQuery = widget.initialRecordName!;
-          _filterUsages(usages);
-        });
-      } else {
-        _filterUsages(usages);
-      }
-    });
+    context.read<UserBloc>().add(GetUserEvent());
   }
 
-  void _filterUsages(List<UsageWithUser> usages) {
+  void _filterUsers(List<User> users) {
     setState(() {
-      _filteredUsagesWithUser = usages.where((usage) {
-        return usage.user.name
+      _filteredUsers = users.where((user) {
+        return user.name.toLowerCase().contains(_searchQuery.toLowerCase()) ||
+            user.usageDetails
                 .toLowerCase()
                 .contains(_searchQuery.toLowerCase()) ||
-            usage.usage.usageDetails
+            user.incubatorType
                 .toLowerCase()
                 .contains(_searchQuery.toLowerCase()) ||
-            usage.usage.incubatorType
-                .toLowerCase()
+            user.startTime.toLowerCase().contains(_searchQuery.toLowerCase()) ||
+            (user.endTime?.toLowerCase() ?? 'active')
                 .contains(_searchQuery.toLowerCase()) ||
-            usage.usage.startTime
-                .toLowerCase()
-                .contains(_searchQuery.toLowerCase()) ||
-            (usage.usage.endTime?.toLowerCase() ?? 'active')
-                .contains(_searchQuery.toLowerCase()) ||
-            usage.usage.comment
-                .toLowerCase()
-                .contains(_searchQuery.toLowerCase()) ||
-            usage.usage.status
-                .toLowerCase()
-                .contains(_searchQuery.toLowerCase());
+            user.comment.toLowerCase().contains(_searchQuery.toLowerCase()) ||
+            user.status.toLowerCase().contains(_searchQuery.toLowerCase());
       }).toList();
     });
   }
@@ -72,8 +55,7 @@ class _DataTablePageState extends State<DataTablePage> {
 
   void _goToNextPage() {
     setState(() {
-      if (_currentPage <
-          (_filteredUsagesWithUser.length / logsPerPage).ceil() - 1) {
+      if (_currentPage < (_filteredUsers.length / logsPerPage).ceil() - 1) {
         _currentPage++;
       }
     });
@@ -94,37 +76,40 @@ class _DataTablePageState extends State<DataTablePage> {
         backgroundColor: const Color.fromRGBO(31, 38, 51, 1),
         foregroundColor: Colors.white,
       ),
-      body: FutureBuilder<List<UsageWithUser>>(
-        future: _usagesWithUser,
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
+      body: BlocBuilder<UserBloc, UserState>(
+        builder: (context, state) {
+          if (state is UserLoadingState) {
             return const Center(child: CircularProgressIndicator());
-          } else if (snapshot.hasError) {
-            return const Center(child: Text('Error loading data'));
-          } else {
-            var usagesWithUser = snapshot.data!;
-            if (_filteredUsagesWithUser.isEmpty && _searchQuery.isEmpty) {
-              _filteredUsagesWithUser = usagesWithUser;
-            }
+          } else if (state is UserLoadedState) {
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              _filterUsers(state.users);
+            });
 
-            int pageCount =
-                (_filteredUsagesWithUser.length / logsPerPage).ceil();
+            int pageCount = (_filteredUsers.length / logsPerPage).ceil();
 
             return Column(
               children: [
-                SearchWidget(
-                  onSearch: (query) {
-                    setState(() {
-                      _searchQuery = query;
-                      _filterUsages(usagesWithUser);
-                      _currentPage = 0; // Reset to first page on search
-                    });
-                  },
-                  initialValue: _searchQuery,
+                Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: TextField(
+                    decoration: const InputDecoration(
+                      hintText: 'Search...',
+                      filled: true,
+                      fillColor: Colors.white,
+                      border: OutlineInputBorder(),
+                    ),
+                    onChanged: (query) {
+                      setState(() {
+                        _searchQuery = query;
+                        _filterUsers(state.users);
+                        _currentPage = 0; // Reset to first page on search
+                      });
+                    },
+                  ),
                 ),
                 Expanded(
                   child: DataTableWidget(
-                    usagesWithUser: _filteredUsagesWithUser,
+                    users: _filteredUsers,
                     logsPerPage: logsPerPage,
                     pageIndex: _currentPage,
                   ),
@@ -169,6 +154,13 @@ class _DataTablePageState extends State<DataTablePage> {
                 ),
               ],
             );
+          } else if (state is UserEmptyState) {
+            return const Center(child: Text("No users available."));
+          } else if (state is UserLoadingFailedState) {
+            return Center(
+                child: Text("Error loading users: ${state.errorMessage}"));
+          } else {
+            return const Center(child: Text("Unknown state"));
           }
         },
       ),

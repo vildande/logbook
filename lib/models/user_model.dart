@@ -1,62 +1,27 @@
-import 'dart:convert';
+import 'package:freezed_annotation/freezed_annotation.dart';
 
-class User {
-  final int userID;
-  final String name;
-  final String phoneNumber;
-  final List<Usage> usages;
+part 'user_model.freezed.dart';
+part 'user_model.g.dart';
 
-  User({
-    required this.userID,
-    required this.name,
-    required this.phoneNumber,
-    required this.usages,
-  });
+@freezed
+class User with _$User {
+  const factory User({
+    @JsonKey(name: 'UserID') required int userID,
+    @JsonKey(name: 'Name') required String name,
+    @JsonKey(name: 'PhoneNumber') required String phoneNumber,
+    @JsonKey(name: 'UsageDetails') required String usageDetails,
+    @JsonKey(name: 'IncubatorType') required String incubatorType,
+    @JsonKey(name: 'StartTime') required String startTime,
+    @JsonKey(name: 'EndTime') String? endTime,
+    @JsonKey(name: 'Comment') required String comment,
+    @JsonKey(name: 'Status') required String status,
+  }) = _User;
 
-  factory User.fromJson(Map<String, dynamic> json) {
-    return User(
-      userID: json['UserID'],
-      name: json['Name'],
-      phoneNumber: json['PhoneNumber'],
-      usages: (json['Usages'] as List).map((i) => Usage.fromJson(i)).toList(),
-    );
-  }
+  factory User.fromJson(Map<String, dynamic> json) => _$UserFromJson(json);
 }
 
-class Usage {
-  final int usageID;
-  final String usageDetails;
-  final String incubatorType;
-  final String startTime;
-  final String? endTime;
-  final String comment;
-  final String status;
-
-  Usage({
-    required this.usageID,
-    required this.usageDetails,
-    required this.incubatorType,
-    required this.startTime,
-    this.endTime,
-    required this.comment,
-    required this.status,
-  });
-
-  factory Usage.fromJson(Map<String, dynamic> json) {
-    return Usage(
-      usageID: json['UsageID'],
-      usageDetails: json['UsageDetails'],
-      incubatorType: json['IncubatorType'],
-      startTime: json['StartTime'],
-      endTime: json['EndTime'],
-      comment: json['Comment'],
-      status: json['Status'],
-    );
-  }
-
-}
-
-List<User> parseUsers(String jsonStr) {
-  final parsed = jsonDecode(jsonStr)['Users'].cast<Map<String, dynamic>>();
-  return parsed.map<User>((json) => User.fromJson(json)).toList();
+List<User> parseUsers(List<dynamic> json) {
+  return json
+      .map((dynamic user) => User.fromJson(user as Map<String, dynamic>))
+      .toList();
 }
