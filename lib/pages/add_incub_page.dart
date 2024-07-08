@@ -41,9 +41,23 @@ class _AddIncubPageState extends State<AddIncubPage> {
     });
   }
 
+  String _formatPhoneNumber(String phone) {
+    // Remove any non-digit characters
+    String cleanedPhone = phone.replaceAll(RegExp(r'\D'), '');
+
+    // Ensure it starts with the country code +7
+    if (cleanedPhone.startsWith('877')) {
+      cleanedPhone = '7' + cleanedPhone.substring(1);
+    } else if (!cleanedPhone.startsWith('7')) {
+      cleanedPhone = '7' + cleanedPhone;
+    }
+
+    return '+$cleanedPhone';
+  }
+
   Future<void> _startIncubation() async {
     String contactName = _contactNameController.text;
-    String contactPhone = _contactPhoneController.text;
+    String contactPhone = _formatPhoneNumber(_contactPhoneController.text);
     String usageDetails = _usageController.text;
 
     if (!_validateInputs(contactName, contactPhone, usageDetails)) {
@@ -103,7 +117,7 @@ class _AddIncubPageState extends State<AddIncubPage> {
       _showPopupMessage("Please enter a valid name.");
       return false;
     }
-    if (phone.isEmpty || !RegExp(r'^\+?[0-9 ]{10,15}$').hasMatch(phone)) {
+    if (phone.isEmpty || !RegExp(r'^\+?[0-9]{11,15}$').hasMatch(phone)) {
       _showPopupMessage("Please enter a valid phone number.");
       return false;
     }

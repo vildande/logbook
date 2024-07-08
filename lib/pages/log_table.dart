@@ -155,10 +155,17 @@ class _DataTablePageState extends State<DataTablePage> {
               ],
             );
           } else if (state is UserEmptyState) {
-            return const Center(child: Text("No users available."));
+            return const Center(
+                child: Text(
+              "No users available.",
+              style: const TextStyle(color: Colors.white),
+            ));
           } else if (state is UserLoadingFailedState) {
             return Center(
-                child: Text("Error loading users: ${state.errorMessage}"));
+                child: Text(
+              "Error loading users: ${state.errorMessage}",
+              style: const TextStyle(color: Colors.white),
+            ));
           } else {
             return const Center(child: Text("Unknown state"));
           }
