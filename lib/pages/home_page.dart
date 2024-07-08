@@ -106,12 +106,12 @@ class _HomePageContentState extends State<HomePageContent> {
                   ],
                 ),
                 const SizedBox(height: 10),
-                // Today's Incubations header
+                // Active Incubations header
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 20),
                   alignment: Alignment.centerLeft,
                   child: const Text(
-                    "Today's Incubations",
+                    "Active Incubations",
                     style: TextStyle(
                         color: Colors.white,
                         fontWeight: FontWeight.bold,
