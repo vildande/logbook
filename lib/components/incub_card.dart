@@ -106,35 +106,38 @@ class _IncubCardState extends State<IncubCard> {
                 ),
               ],
             ),
+
             Row(
               children: [
                 const Icon(Icons.timer, size: 12),
                 const SizedBox(width: 3),
                 Text(widget.user.startTime,
                     style: const TextStyle(fontSize: 14)),
-                const Text(" - ", style: TextStyle(fontSize: 14)),
-                if (widget.user.endTime != null)
-                  Text(
-                    widget.user.endTime!,
-                    style: const TextStyle(fontSize: 14),
-                  ),
-                if (widget.user.endTime == null &&
-                    widget.user.status.toLowerCase() == 'in progress')
-                  Container(
-                    margin: const EdgeInsets.only(left: 5),
-                    padding:
-                        const EdgeInsets.symmetric(vertical: 5, horizontal: 10),
-                    decoration: BoxDecoration(
-                      color: Colors.green,
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    child: const Text(
-                      "Active",
-                      style: TextStyle(color: Colors.white, fontSize: 14),
-                    ),
-                  ),
+                    
+                // const Text(" - ", style: TextStyle(fontSize: 14)),
+                // if (widget.user.endTime != null)
+                //   Text(
+                //     widget.user.endTime!,
+                //     style: const TextStyle(fontSize: 14),
+                //   ),
+                // if (widget.user.endTime == null &&
+                //     widget.user.status.toLowerCase() == 'in progress')
+                //   Container(
+                //     margin: const EdgeInsets.only(left: 5),
+                //     padding:
+                //         const EdgeInsets.symmetric(vertical: 5, horizontal: 10),
+                //     decoration: BoxDecoration(
+                //       color: Colors.green,
+                //       borderRadius: BorderRadius.circular(20),
+                //     ),
+                //     child: const Text(
+                //       "Active",
+                //       style: TextStyle(color: Colors.white, fontSize: 14),
+                //     ),
+                //   ),
               ],
             ),
+
             if (widget.user.status.toLowerCase() == 'cancelled')
               Container(
                 margin: const EdgeInsets.only(top: 5),
