@@ -181,7 +181,8 @@ class _HomePageContentState extends State<HomePageContent> {
     if (state is UserLoadingState) {
       return const Center(child: CircularProgressIndicator());
     } else if (state is UserLoadedState) {
-      var users = state.users;
+      var users = state.users.where((user) => user.status.toLowerCase() == 'in progress').toList(); // only active
+
       if (users.isEmpty) {
         return _buildEmptyMessage('No active incubations.');
       } else {
